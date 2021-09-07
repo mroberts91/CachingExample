@@ -19,7 +19,7 @@ public class ZipCodeController : ControllerBase
     public async Task<IActionResult> Get([FromRoute] string code)
     {
         _logger.LogInformation("Attempting to find {type}, for zip code {code}", nameof(CityData), code);
-        await Task.Delay(_random.Next(300, 800));
+        await Task.Delay(_random.Next(500, 1200));
         return Ok(await _context.CityData.FirstAsync(c => c.ZipCode == code));
     }
 }

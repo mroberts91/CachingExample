@@ -1,5 +1,18 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+
+.table-zip {
+    max-width: min(50%, 75vw);
+}
+
+.search-button {
+}
+
+    .search-button img {
+        height: 3em;
+        margin-left: 20px;
+    }
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }

@@ -8,7 +8,17 @@
 	<label for=search>Zip Code Lookup</label>
 	<InputText @bind-Value=@Model.SearchText class="form-control" placeholder="Zip Code" />
 	<br />
-	<button class="btn btn-primary" type="submit">Search</button>
+	<div class="search-button">
+		@if (Loading)
+		{
+			<button disabled class="btn btn-primary" type="submit">Search</button>
+			<img src="/loading.gif"/>
+		}
+		else
+		{
+			<button class="btn btn-primary" type="submit">Search</button>
+		}
+	</div>
 </EditForm>
 @if(ErrorMessage != null)
 {
@@ -16,33 +26,76 @@
 	<div class="alert alert-danger">@ErrorMessage</div>
 }
 
+@if(LastSearchTime is TimeSpan ts)
+{
+	<br	/>
+	<div class="alert alert-primary">
+		Last Search Completed in: <strong>@(ts.TotalMilliseconds.ToString("N2")) ms</strong>
+	</div>
+}
+
 @if(SearchResult is CityData data)
 {
 	<br />
-	<p>@(nameof(data.ZipCode)):  @data.ZipCode</p>
-	<p>@(nameof(data.City)):  @data.City</p>
-	<p>@(nameof(data.State)):  @data.State</p>
-	<p>@(nameof(data.StateAbbreviation)):  @data.StateAbbreviation</p>
-	<p>@(nameof(data.County)):  @data.County</p>
-	<p>@(nameof(data.Longitude)):  @data.Longitude</p>
-	<p>@(nameof(data.Latitude)):  @data.Latitude</p>
+	<table class="table table-zip">
+	  <tbody>
+	    <tr>
+	      <th scope="row">Zip Code</th>
+	      <td>@data.ZipCode</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">City</th>
+	      <td>@data.City</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">State</th>
+	      <td>@data.State</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">Abbreviation</th>
+	      <td>@data.StateAbbreviation</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">County</th>
+	      <td>@data.County</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">Longitude</th>
+	      <td>@data.Longitude</td>
+		  <td></td>
+	    </tr>
+		<tr>
+	      <th scope="row">Latitude</th>
+	      <td>@data.Latitude</td>
+		  <td></td>
+	    </tr>
+	  </tbody>
+	</table>
 }
 
 
 @code{
-	public CityData? SearchResult { get; set; }
-
-	public string? ErrorMessage { get; set; }
-	public SearchModel Model { get; set; } = new();
+	bool Loading { get; set; } = false;
+	CityData? SearchResult { get; set; }
+	TimeSpan? LastSearchTime { get; set; }
+	string? ErrorMessage { get; set; }
+	SearchModel Model { get; set; } = new();
 
 
 	async Task OnSearch(EditContext context)
 	{
+		Loading = true;
 		ErrorMessage = null;
 
 		if(string.IsNullOrWhiteSpace(Model?.SearchText))
 		{
 			ErrorMessage = "Search is Invalid";
+			Loading = false;
 			await InvokeAsync(() => StateHasChanged());
 			return;
 		}
@@ -50,11 +103,13 @@
 		using var client = ClientFactory.CreateClient();
 		client.BaseAddress = new Uri(Configuration.GetValue<string>("ZipCodeServiceUrl"));
 
-		var response = await client.GetAsync($"zipcode/{Model.SearchText}");
+		WrappedActionResult<HttpResponseMessage?> result = await RequestStatsWrapper.WrapAsync<HttpResponseMessage>(() => client.GetAsync($"zipcode/{Model.SearchText}"));
+		//var response = await client.GetAsync($"zipcode/{Model.SearchText}");
 
-		if (!response.IsSuccessStatusCode)
+		if (!result.HasResult || !(result.Result is HttpResponseMessage response) || !response.IsSuccessStatusCode)
 		{
 			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
+			Loading = false;
 			await InvokeAsync(() => StateHasChanged());
 			return;	
 		}
@@ -71,11 +126,14 @@
 		if (data is null)
 		{
 			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
+			Loading = false;
 			await InvokeAsync(() => StateHasChanged());
 			return;	
 		}
 
+		Loading = false;
 		SearchResult = data;
+		LastSearchTime = result.Elapsed;
 		await InvokeAsync(() => StateHasChanged());
 		
 	}
