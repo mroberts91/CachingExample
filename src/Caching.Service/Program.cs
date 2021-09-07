@@ -1,12 +1,19 @@
 
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 CreateLogger();
 
 builder.WebHost.UseSerilog();
 
-// Add services to the container.
 
+builder.Services.AddDbContext<ApplicationDbContext>(options => 
+{
+    options.UseQueryTrackingBehavior(Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking);
+    options.UseSqlite("Data Source=Data/zip_code_data.db");
+
+}, ServiceLifetime.Transient);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -49,6 +56,7 @@ finally
 {
     Log.CloseAndFlush();
 }
+
 
 static void CreateLogger()
 {

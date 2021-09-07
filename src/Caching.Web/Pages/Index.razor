@@ -1,7 +1,89 @@
 ﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@inject IConfiguration Configuration
+@inject IHttpClientFactory ClientFactory
 
-<h1>Hello, world!</h1>
+<EditForm Model=@Model OnValidSubmit=@OnSearch>
+	<ValidationSummary />
+	<label for=search>Zip Code Lookup</label>
+	<InputText @bind-Value=@Model.SearchText class="form-control" placeholder="Zip Code" />
+	<br />
+	<button class="btn btn-primary" type="submit">Search</button>
+</EditForm>
+@if(ErrorMessage != null)
+{
+	<br	/>
+	<div class="alert alert-danger">@ErrorMessage</div>
+}
 
-Welcome to your new app.
+@if(SearchResult is CityData data)
+{
+	<br />
+	<p>@(nameof(data.ZipCode)):  @data.ZipCode</p>
+	<p>@(nameof(data.City)):  @data.City</p>
+	<p>@(nameof(data.State)):  @data.State</p>
+	<p>@(nameof(data.StateAbbreviation)):  @data.StateAbbreviation</p>
+	<p>@(nameof(data.County)):  @data.County</p>
+	<p>@(nameof(data.Longitude)):  @data.Longitude</p>
+	<p>@(nameof(data.Latitude)):  @data.Latitude</p>
+}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+
+@code{
+	public CityData? SearchResult { get; set; }
+
+	public string? ErrorMessage { get; set; }
+	public SearchModel Model { get; set; } = new();
+
+
+	async Task OnSearch(EditContext context)
+	{
+		ErrorMessage = null;
+
+		if(string.IsNullOrWhiteSpace(Model?.SearchText))
+		{
+			ErrorMessage = "Search is Invalid";
+			await InvokeAsync(() => StateHasChanged());
+			return;
+		}
+
+		using var client = ClientFactory.CreateClient();
+		client.BaseAddress = new Uri(Configuration.GetValue<string>("ZipCodeServiceUrl"));
+
+		var response = await client.GetAsync($"zipcode/{Model.SearchText}");
+
+		if (!response.IsSuccessStatusCode)
+		{
+			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
+			await InvokeAsync(() => StateHasChanged());
+			return;	
+		}
+
+		var options = new JsonSerializerOptions
+		{
+		    AllowTrailingCommas= true,
+		    PropertyNameCaseInsensitive = true,
+		    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		};
+
+		CityData? data = await JsonSerializer.DeserializeAsync<CityData?>(await response.Content.ReadAsStreamAsync(), options);
+
+		if (data is null)
+		{
+			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
+			await InvokeAsync(() => StateHasChanged());
+			return;	
+		}
+
+		SearchResult = data;
+		await InvokeAsync(() => StateHasChanged());
+		
+	}
+
+
+	public class SearchModel
+	{
+		[Required, MaxLength(5,ErrorMessage = "Search must be 5 digits"), MinLength(5, ErrorMessage = "Search must be 5 digits")]
+		public string? SearchText  { get; set; }
+	}
+}

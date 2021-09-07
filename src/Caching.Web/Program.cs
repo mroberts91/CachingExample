@@ -5,10 +5,9 @@ CreateLogger();
 
 builder.WebHost.UseSerilog();
 
-// Add services to the container.
+builder.Services.AddHttpClient();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 
 var app = builder.Build();
 

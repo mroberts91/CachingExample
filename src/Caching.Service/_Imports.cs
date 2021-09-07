@@ -1,4 +1,7 @@
-﻿global using Microsoft.Extensions.DependencyInjection;
+﻿global using Caching.Shared;
+global using Caching.Service;
+global using Caching.Service.Data;
+global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.OpenApi.Models;

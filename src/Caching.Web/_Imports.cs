@@ -10,4 +10,4 @@ global using System.Net.Http;
 global using System.Text.Json;
 global using System.Threading.Tasks;
 global using Microsoft.AspNetCore.Components;
-global using Caching.Web.Data;
+global using Caching.Shared;
