@@ -8,6 +8,7 @@ builder.WebHost.UseSerilog();
 builder.Services.AddHttpClient();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddTransient<IZipCodeService, ZipCodeService>();
 
 var app = builder.Build();
 

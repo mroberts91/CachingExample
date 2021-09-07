@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using System.ComponentModel.DataAnnotations
-@inject IConfiguration Configuration
-@inject IHttpClientFactory ClientFactory
+@inject IZipCodeService ZipCodeService
 
 <EditForm Model=@Model OnValidSubmit=@OnSearch>
 	<ValidationSummary />
@@ -100,39 +99,15 @@
 			return;
 		}
 
-		using var client = ClientFactory.CreateClient();
-		client.BaseAddress = new Uri(Configuration.GetValue<string>("ZipCodeServiceUrl"));
+		WrappedActionResult<CityData?> result = await ZipCodeService.GetZipCodeDataAsync(Model.SearchText);
 
-		WrappedActionResult<HttpResponseMessage?> result = await RequestStatsWrapper.WrapAsync<HttpResponseMessage>(() => client.GetAsync($"zipcode/{Model.SearchText}"));
-		//var response = await client.GetAsync($"zipcode/{Model.SearchText}");
-
-		if (!result.HasResult || !(result.Result is HttpResponseMessage response) || !response.IsSuccessStatusCode)
+		if (!result.HasResult)
 		{
-			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
-			Loading = false;
-			await InvokeAsync(() => StateHasChanged());
-			return;	
-		}
-
-		var options = new JsonSerializerOptions
-		{
-		    AllowTrailingCommas= true,
-		    PropertyNameCaseInsensitive = true,
-		    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		};
-
-		CityData? data = await JsonSerializer.DeserializeAsync<CityData?>(await response.Content.ReadAsStreamAsync(), options);
-
-		if (data is null)
-		{
-			ErrorMessage = $"Unable to find valid Zip Code for {Model.SearchText}";
-			Loading = false;
-			await InvokeAsync(() => StateHasChanged());
-			return;	
+			ErrorMessage = result.ExceptionMessage ?? "Error Occurred";
 		}
 
 		Loading = false;
-		SearchResult = data;
+		SearchResult = result.Result;
 		LastSearchTime = result.Elapsed;
 		await InvokeAsync(() => StateHasChanged());
 		

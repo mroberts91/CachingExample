@@ -11,6 +11,7 @@ namespace Caching.Shared
     public record struct WrappedActionResult<TResult>(TResult? Result, Exception? Exception, TimeSpan Elapsed)
     {
         public bool HasResult => Result is not null;
+        public string? ExceptionMessage => Exception?.Message;
     }
 
     public class RequestStatsWrapper
