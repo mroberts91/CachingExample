@@ -1,11 +1,4 @@
 name: .NET
-
-on:
-  push:
-    branches: [ 1-base-functionality-no-cache ]
-  pull_request:
-    branches: [ 1-base-functionality-no-cache ]
-
 jobs:
   build:
 
