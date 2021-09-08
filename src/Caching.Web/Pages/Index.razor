@@ -4,6 +4,7 @@
 
 <EditForm Model=@Model OnValidSubmit=@OnSearch>
 	<ValidationSummary />
+	<DataAnnotationsValidator />
 	<label for=search>Zip Code Lookup</label>
 	<InputText @bind-Value=@Model.SearchText class="form-control" placeholder="Zip Code" />
 	<br />
@@ -99,16 +100,16 @@
 			return;
 		}
 
-		WrappedActionResult<CityData?> result = await ZipCodeService.GetZipCodeDataAsync(Model.SearchText);
+		WrappedActionResult<CityData?> result = await RequestStatsWrapper.WrapAsync(() => ZipCodeService.GetZipCodeDataAsync(Model.SearchText));
 
 		if (!result.HasResult)
 		{
 			ErrorMessage = result.ExceptionMessage ?? "Error Occurred";
 		}
 
-		Loading = false;
 		SearchResult = result.Result;
 		LastSearchTime = result.Elapsed;
+		Loading = false;
 		await InvokeAsync(() => StateHasChanged());
 		
 	}

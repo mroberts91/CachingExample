@@ -5,9 +5,13 @@ CreateLogger();
 
 builder.WebHost.UseSerilog();
 
-builder.Services.AddHttpClient();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<ICityDataCache, CityDataCache>();
+builder.Services.AddHttpClient<IZipCodeServiceClient, ZipCodeServiceClient>(client => 
+{
+    client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ZipCodeServiceUrl"));
+});
 builder.Services.AddTransient<IZipCodeService, ZipCodeService>();
 
 var app = builder.Build();
