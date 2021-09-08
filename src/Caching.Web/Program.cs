@@ -1,4 +1,8 @@
 
+using Polly;
+using Polly.Caching;
+using Polly.Registry;
+
 var builder = WebApplication.CreateBuilder(args);
 
 CreateLogger();
@@ -7,11 +11,28 @@ builder.WebHost.UseSerilog();
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<ICityDataCache, CityDataCache>();
+
+builder.Services.AddSingleton<Polly.Caching.IAsyncCacheProvider, Polly.Caching.Memory.MemoryCacheProvider>();
+builder.Services.AddSingleton<Polly.Registry.IReadOnlyPolicyRegistry<string>, Polly.Registry.PolicyRegistry>((serviceProvider) =>
+{
+    PolicyRegistry registry = new();
+
+    registry.Add(
+        "zipcodeserviceclient",
+        Policy.CacheAsync<CityData>(
+            serviceProvider.GetRequiredService<IAsyncCacheProvider>().AsyncFor<CityData>(),
+            TimeSpan.FromSeconds(30)
+        )
+    );
+
+    return registry;
+});
+
 builder.Services.AddHttpClient<IZipCodeServiceClient, ZipCodeServiceClient>(client => 
 {
     client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ZipCodeServiceUrl"));
 });
+
 builder.Services.AddTransient<IZipCodeService, ZipCodeService>();
 
 var app = builder.Build();
@@ -33,7 +54,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
