@@ -1,6 +1,6 @@
 # Ejemplo de almacenamiento en caché de Dotnet 📜
 
-Este repositorio está diseñado para ayudar a comprender el almacenamiento en caché básico en una aplicación .NET. Las sucursales están configuradas de manera que
+Este repositorio está diseñado para ayudar a comprender el almacenamiento en caché básico en una aplicación .NET. Las ramas están configuradas de manera que usted
 puede analizar el código y las prácticas en la primera rama y pasar por cada rama subsiguiente para ver qué código se limpió
 o abstraído.
 
@@ -168,9 +168,9 @@ public class ZipCodeService : IZipCodeService
 
 -   Esta rama crea:
     -   a`ICityDataCache`que abstrae la implementación y configuración del almacenamiento en caché lejos de los usuarios del`ICityDataCache`interfaz
-    -   un 'IZipCodeServiceClient\` que es un servicio transitorio que abstrae la implementación de la tecnología que estamos usando para ir y obtener los datos. Podría ser HTTP, SQL, gRPC, etc.
+    -   un 'IZipCodeServiceClient' que es un servicio transitorio que abstrae la implementación de la tecnología que estamos usando para ir y obtener los datos. Podría ser HTTP, SQL, gRPC, etc.
 -   los`ZipCodeService`ahora puede centrarse más en los detalles comerciales clave en torno a los datos y no en los detalles de implementación sobre cómo obtenemos los datos.
--   También nos facilitamos la redacción de pruebas unitarias en torno al`ZipCodeService`porque ahora podemos burlarnos fácilmente del comportamiento del`ICityDataCache`y`IZipCodeServiceClient`
+-   También nos facilitamos la tarea de escribir pruebas unitarias en torno a`ZipCodeService`porque ahora podemos burlarnos fácilmente del comportamiento del`ICityDataCache`y`IZipCodeServiceClient`
 
 ```csharp
 public class ZipCodeService : IZipCodeService
