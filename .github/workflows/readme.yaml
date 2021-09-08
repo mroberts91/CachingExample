@@ -20,4 +20,4 @@ jobs:
       - name: Adding README - Spanish
         uses: dephraiim/translate-readme@main
         with:
-          LANG: es
+          LANG: es-pe
