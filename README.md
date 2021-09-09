@@ -195,7 +195,7 @@ public class ZipCodeService : IZipCodeService
 }
 ```
 
-### 3. cache-polices 🚀
+### 4. cache-polices 🚀
 - This branch:
   - Removes the managed `ICityDataCache`
   - Adds an `IAsyncPolicy<CityData?>` to the `IReadOnlyPolicyRegistry` provided by the `Polly.Caching.Memory` NuGet package to be used in the `IZipCodeServiceClient`
