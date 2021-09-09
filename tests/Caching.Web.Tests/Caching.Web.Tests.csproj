@@ -23,4 +23,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Caching.Shared\Caching.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Caching.Web\Caching.Web.csproj" />
+  </ItemGroup>
+
 </Project>
